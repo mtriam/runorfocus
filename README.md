@@ -132,7 +132,8 @@ The script:
 2. searches remaining tags
 3. focuses the first matching window
 
-rofw — focuses the window directly (wlrctl window focus ...).
+- rofw — focuses the window directly (wlrctl window focus).
+
 ---
 
 ### If the app is not running
