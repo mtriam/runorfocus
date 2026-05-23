@@ -23,7 +23,7 @@ Perfect for keybindings like:
 - Optional fallback tag
 - Launch app if no matching window exists
 - Detect running processes before launching
-- Works entirely through `mmsg`
+- Works entirely through `mmsg` (or mmseg and wlrctl)
 
 ---
 
@@ -31,14 +31,25 @@ Perfect for keybindings like:
 
 - MangoWM
 - Bash
+- wlrctl (required for the `rofw.sh` variant)
 
 ---
 
 ## Usage
 
+Use either the original `rof` script or the `rofw` (wlrctl-based) variant.
+
 ```bash
-rof  <fallback_tag|c> <appid> <process_name> <command>
+rof <fallback_tag|c> <appid> <process_name> <command...>
 ```
+
+or
+
+```bash
+rofw <fallback_tag|c> <appid> <command...>
+```
+
+
 
 ### Arguments
 
@@ -58,6 +69,12 @@ rof  <fallback_tag|c> <appid> <process_name> <command>
 
 ```bash
 ~/local/bin/rof c org.kde.konsole konsole konsole
+```
+
+### Focus or launch konsole using rofw (wlrctl-based) on current tag
+
+```bash
+~/local/bin/rofw c org.kde.konsole konsole
 ```
 
 ### Focus or launch code-oss on first tag
@@ -81,6 +98,14 @@ rof  <fallback_tag|c> <appid> <process_name> <command>
 bind = SUPER, RETURN, spawn, ~/local/bin/rof c org.kde.konsole konsole konsole
 bind = SUPER, e, spawn, ~/local/bin/rof 2 org.gnome.Nautilus nautilus GSK_RENDERER=gl nautilus
 ```
+
+or
+
+```ini
+bind = SUPER, RETURN, spawn, ~/local/bin/rofw c org.kde.konsole konsole
+bind = SUPER, e, spawn, ~/local/bin/rofw 2 org.gnome.Nautilus GSK_RENDERER=gl nautilus
+```
+
 
 ---
 
@@ -107,6 +132,7 @@ The script:
 2. searches remaining tags
 3. focuses the first matching window
 
+rofw — focuses the window directly (wlrctl window focus ...).
 ---
 
 ### If the app is not running
@@ -128,13 +154,35 @@ wget -O ~/.local/bin/rof https://raw.githubusercontent.com/mtriam/runorfosuc/mai
 chmod +x ~/.local/bin/rof
 ```
 
+or 
+
+```bash
+mkdir -p ~/.local/bin
+wget -O ~/.local/bin/rofw https://raw.githubusercontent.com/mtriam/runorfosuc/main/rofw.sh
+chmod +x ~/.local/bin/rofw
+```
+
+`wlrctl` installation examples (depending on your distribution):
+
+- Arch Linux (AUR helper):
+
+```bash
+# using paru or yay
+paru -S wlrctl
+# or
+yay -S wlrctl
+```
+
+- Debian
+```bash
+sudo apt install wlrctl
+```
 ---
 
 ## Notes
 
-- `appid` must match MangoWM window appid exactly.
-- For Flatpak apps, appid may differ from process name.
-- The script uses `pgrep -x` and `pgrep -f` for process detection.
+Window cycling occurs only on the active tag when there is more than one window; when there is only one, the script jumps through all tags that have windows.
+
 
 ---
 
