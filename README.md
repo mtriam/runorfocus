@@ -29,7 +29,7 @@ Ideal for a fast single-key workflow: launching, focusing, switching, and cyclin
 Use `rfcm` (new IPC `mmsg`) as the primary variant:
 
 ```bash
-rfcm <tag> <appid> <command...>
+rfcm <tag|c> <appid> <command...>
 ```
 
 For older IPC-compatible workflows, you can still use:
