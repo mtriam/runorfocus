@@ -2,28 +2,17 @@
 
 A small helper script for [MangoWM](https://github.com/DreamMaoMao/mangowm) that:
 
-- focuses an existing application window if it already exists
+- focuses an existing application window
 - cycles through multiple windows of the same app
-- switches between tags automatically
+- switches to the previously focused window when only one matching window is active
+- automatically switches between tags
 - launches the application if it is not running
 
-Perfect for keybindings like:
+## Purpose
 
-- press once → focus app
-- press again → cycle to next window
-- app not running → start it
+Bind this script to a single key to turn it into an all-in-one app handler. Pressing the key will focus an existing window of the app, cycle through multiple windows of the same app, switch to the previously focused window if only one match exists, automatically switch tags when needed, or launch the app if it is not running.
 
----
-
-## Features
-
-- Focus existing windows by `appid`
-- Cycle through windows on repeated key presses
-- searches only tags that contain windows (avoids empty tags for faster switching)
-- Optional fallback tag
-- Launch app if no matching window exists
-- Detect running processes before launching
-- Works entirely through `mmsg` (or mmseg and wlrctl)
+Ideal for a fast single-key workflow: launching, focusing, switching, and cycling windows without separate bindings.
 
 ---
 
@@ -37,16 +26,22 @@ Perfect for keybindings like:
 
 ## Usage
 
-Use either the original `rof` script or the `rofw` (wlrctl-based) variant.
+Use `rfcm` (new IPC `mmsg`) as the primary variant:
 
 ```bash
-rof <fallback_tag|c> <appid> <process_name> <command...>
+rfcm <tag> <appid> <command...>
+```
+
+For older IPC-compatible workflows, you can still use:
+
+```bash
+rof <tag|c> <appid> <process_name> <command...>
 ```
 
 or
 
 ```bash
-rofw <fallback_tag|c> <appid> <command...>
+rofw <tag|c> <appid> <command...>
 ```
 
 
@@ -55,21 +50,36 @@ rofw <fallback_tag|c> <appid> <command...>
 
 | Argument | Description |
 |---|---|
-| `fallback_tag` | Tag where the application will be launched if it is not currently running |
-| `c` | Use current tag as fallback |
-| `appid` | Window appid used by MangoWM (check with `mmsg -w -c`) |
-| `process_name` | Process name checked with `pgrep -x` and `pgrep -f` |
-| `command` | Command used to launch the app (you can include arguments, flags, etc.) |
+| `tag` | Tag where the application will be launched if it is not already running |
+| `c` | Use the current tag |
+| `appid` | Window app ID used by MangoWM (check with `mmsg -w -c`) |
+| `command` | Command used to launch the application (arguments and flags are supported) |
+| `process_name` | Process name checked with `pgrep -x` and `pgrep -f` (legacy IPC variants only) |
 
 ---
 
 ## Examples
 
+### Focus, cycle, or launch konsole using rfcm (new mmsg IPC variant)
+
+```bash
+~/local/bin/rfcm 1 org.kde.konsole konsole
+```
+
+### Focus Nautilus or launch it on second tag
+
+```bash
+~/local/bin/rfcm 2 org.gnome.Nautilus GSK_RENDERER=gl nautilus
+```
+
 ### Focus or launch konsole on current tag
 
 ```bash
-~/local/bin/rof c org.kde.konsole konsole konsole
+~/local/bin/rfcm c org.kde.konsole konsole
 ```
+
+Older IPC variants:
+
 
 ### Focus or launch konsole using rofw (wlrctl-based) on current tag
 
@@ -95,6 +105,13 @@ rofw <fallback_tag|c> <appid> <command...>
 ## MangoWM Keybindings example
 
 ```ini
+bind = SUPER, RETURN, spawn, ~/local/bin/rfcm 1 org.kde.konsole konsole
+bind = SUPER, e, spawn, ~/local/bin/rfcm 2 org.gnome.Nautilus GSK_RENDERER=gl nautilus
+```
+
+Older IPC variants:
+
+```ini
 bind = SUPER, RETURN, spawn, ~/local/bin/rof c org.kde.konsole konsole konsole
 bind = SUPER, e, spawn, ~/local/bin/rof 2 org.gnome.Nautilus nautilus GSK_RENDERER=gl nautilus
 ```
@@ -113,12 +130,7 @@ bind = SUPER, e, spawn, ~/local/bin/rofw 2 org.gnome.Nautilus GSK_RENDERER=gl na
 
 ### If the app is already focused
 
-The script:
-
-1. searches for another matching window
-2. cycles through windows on the current tag
-3. searches other tags
-4. wraps around all tags if needed
+The script searches for another matching window and focuses it. If only one matching window exists, it switches to the previously focused window.
 
 This makes repeated key presses behave like a window cycler.
 
@@ -126,13 +138,7 @@ This makes repeated key presses behave like a window cycler.
 
 ### If the app exists but is not focused
 
-The script:
-
-1. searches the fallback tag first
-2. searches remaining tags
-3. focuses the first matching window
-
-- rofw — focuses the window directly (wlrctl window focus).
+The script focuses the first matching window
 
 ---
 
@@ -140,14 +146,21 @@ The script:
 
 The script:
 
-1. switches to the fallback tag
-2. launches the command
-
+1. switches to the specified tag
+2. launches the application
 ---
 
 ## Installation
 
 ### Local install
+
+```bash
+mkdir -p ~/.local/bin
+wget -O ~/.local/bin/rfcm https://raw.githubusercontent.com/mtriam/runorfosuc/main/rfcm.sh
+chmod +x ~/.local/bin/rfcm
+```
+
+or (older IPC variants)
 
 ```bash
 mkdir -p ~/.local/bin
@@ -180,13 +193,6 @@ sudo apt install wlrctl
 ```
 ---
 
-## Notes
-
-Window cycling occurs only on the active tag when there is more than one window; when there is only one, the script jumps through all tags that have windows.
-
-
----
-
 ## License
 
-GPL 3.0
+GPL-3.0
