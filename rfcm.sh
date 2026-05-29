@@ -23,7 +23,7 @@ appids_count=${#appids[@]}
 # no appid
 if [ "$appids_count" -eq 0 ]; then
   if [[ "$TAG" =~ ^[1-9]$ ]]; then
-    mmsg dispatch tag,"$TAG" >/dev/null 2>&1
+    mmsg dispatch view,"$TAG" >/dev/null 2>&1
   fi
   eval "$CMD" &
   exit 0
@@ -34,7 +34,7 @@ if [ "$appids_count" -eq 1 ]; then
     mmsg dispatch focuslast
     exit 0
   else
-    mmsg dispatch tag, "${tags[0]}"
+    mmsg dispatch view, "${tags[0]}"
     mmsg dispatch focusid client, "${ids[0]}"
     exit 0
   fi
@@ -54,7 +54,7 @@ if [ "$appids_count" -gt 1 ]; then
   else
     next_idx=0
   fi
-  mmsg dispatch tag, "${tags[$next_idx]}"
+  mmsg dispatch view, "${tags[$next_idx]}"
   mmsg dispatch focusid client, "${ids[$next_idx]}"
   exit 0
 fi
