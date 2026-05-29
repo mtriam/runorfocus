@@ -56,6 +56,10 @@ rofw <tag|c> <appid> <command...>
 | `command` | Command used to launch the application (arguments and flags are supported) |
 | `process_name` | Process name checked with `pgrep -x` and `pgrep -f` (legacy IPC variants only) |
 
+#### You can open the needed application windows and generate bind commands using `bind_generator.sh` (requires new IPC mmsg), then adjust them manually to fit your setup.
+
+
+
 ---
 
 ## Examples
