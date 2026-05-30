@@ -1,18 +1,15 @@
 # MangoWM Run or Focus
 
-A small helper script for [MangoWM](https://github.com/DreamMaoMao/mangowm) that:
+A small helper script for [MangoWM](https://github.com/DreamMaoMao/mangowm) that provides keyboard-driven application switching similar to pinned applications in GNOME Dash-to-Dock, KDE Plasma, Unity, and the Windows taskbar, where pressing Super+1, Super+2, etc. launches or focuses the corresponding application for fast, direct, and convenient access.
 
-- focuses an existing application window
-- cycles through multiple windows of the same app
-- switches to the previously focused window when only one matching window is active
-- automatically switches between tags
-- launches the application if it is not running
+Bind the script to a single key to create an all-in-one application handler. Depending on the current state, it will:
 
-## Purpose
+ - focus an existing application window
+ - cycle through multiple windows of the same application
+ - switch to the previously focused window when no other matching windows exist
+ - automatically switch between tags
+ - launch the application if it is not running
 
-Bind this script to a single key to turn it into an all-in-one app handler. Pressing the key will focus an existing window of the app, cycle through multiple windows of the same app, switch to the previously focused window if only one match exists, automatically switch tags when needed, or launch the app if it is not running.
-
-Ideal for a fast single-key workflow: launching, focusing, switching, and cycling windows without separate bindings.
 
 ---
 
@@ -52,37 +49,32 @@ rofw <tag|c> <appid> <command...>
 |---|---|
 | `tag` | Tag where the application will be launched if it is not already running |
 | `c` | Use the current tag |
-| `appid` | Window app ID used by MangoWM (check with `mmsg -w -c`) |
+| `appid` | Window app ID used by MangoWM <sup>*</sup>|
 | `command` | Command used to launch the application (arguments and flags are supported) |
 | `process_name` | Process name checked with `pgrep -x` and `pgrep -f` (legacy IPC variants only) |
 
-#### You can open the needed application windows and generate bind commands using `bind_generator.sh` (requires new IPC mmsg), then adjust them manually to fit your setup.
-
+#### * Use `mmsg get all-clients | jq -r '.clients[].appid'` (or `mmsg -w -c` and change the active window) to obtain application appids. You can also open the desired application windows and generate bind commands with `bind_generator.sh` (requires the new mmsg IPC), then adjust them manually to match your setup.
 
 
 ---
 
 ## Examples
 
-### Focus, cycle, or launch konsole using rfcm (new mmsg IPC variant)
+New mmsg IPC format:
+
+### Focus, cycle, or launch konsole on first tag
 
 ```bash
 ~/local/bin/rfcm 1 org.kde.konsole konsole
 ```
 
-### Focus Nautilus or launch it on second tag
+### Focus Nautilus or launch it on current tag
 
 ```bash
-~/local/bin/rfcm 2 org.gnome.Nautilus GSK_RENDERER=gl nautilus
+~/local/bin/rfcm c org.gnome.Nautilus GSK_RENDERER=gl nautilus
 ```
 
-### Focus or launch konsole on current tag
-
-```bash
-~/local/bin/rfcm c org.kde.konsole konsole
-```
-
-Older IPC variants:
+Old mmsg IPC format:
 
 
 ### Focus or launch konsole using rofw (wlrctl-based) on current tag
@@ -110,7 +102,7 @@ Older IPC variants:
 
 ```ini
 bind = SUPER, RETURN, spawn, ~/local/bin/rfcm 1 org.kde.konsole konsole
-bind = SUPER, e, spawn, ~/local/bin/rfcm 2 org.gnome.Nautilus GSK_RENDERER=gl nautilus
+bind = SUPER, e, spawn, ~/local/bin/rfcm c org.gnome.Nautilus GSK_RENDERER=gl nautilus
 ```
 
 Older IPC variants:
