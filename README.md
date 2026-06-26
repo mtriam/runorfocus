@@ -10,7 +10,7 @@ Bind the script to a single key to create an all-in-one application handler. Dep
  - automatically switch between tags
  - launch the application if it is not running
 
-> **Update:** Added support for `rfcmt`, a new variant that can find windows by title or title fragment.
+> **Update:** Added support for `rfcmt` and `rfe`, new variants that can find windows by title/title fragment and ignore matching window titles.
 
 ---
 
@@ -18,6 +18,7 @@ Bind the script to a single key to create an all-in-one application handler. Dep
 
 - MangoWM
 - Bash
+- jq
 - wlrctl (required for the `rofw.sh` variant)
 
 ---
@@ -34,6 +35,12 @@ Use `rfcmt` to match by window title instead of appid:
 
 ```bash
 rfcmt <tag|c> <window_title> <command...>
+```
+
+Use `rfe` to run or focus by appid while ignoring a matching title fragment:
+
+```bash
+rfe <tag|c> <appid> <ignore_title_fragment> <command...>
 ```
 
 For older IPC-compatible workflows, you can still use:
@@ -58,12 +65,13 @@ rofw <tag|c> <appid> <command...>
 | `c` | Use the current tag |
 | `appid` | Window app ID used by MangoWM <sup>*</sup> |
 | `window_title` | Window title or title fragment used to match an existing window for `rfcmt` ** |
+| `ignore_title_fragment` | Window title fragment to exclude from matching windows for `rfe` ** |
 | `command` | Command used to launch the application (arguments and flags are supported) |
 | `process_name` | Process name checked with `pgrep -x` and `pgrep -f` (legacy IPC variants only) |
 
 #### * Use `mmsg get all-clients | jq -r '.clients[].appid'` (or `mmsg -w -c` and change the active window) to obtain application appids. You can also open the desired application windows and generate bind commands with `bind_generator.sh` (requires the new mmsg IPC), then adjust them manually to match your setup.
 
-#### ** Use `mmsg get all-clients | jq -r '.clients[].title'` to obtain window titles for `rfcmt`; you can pass a title fragment to match an existing window.
+#### ** Use `mmsg get all-clients | jq -r '.clients[].title'` to obtain window titles for `rfcmt`, or use `rfe` with a title fragment to exclude a matching window.
 
 
 ---
@@ -88,6 +96,18 @@ New mmsg IPC format:
 
 ```bash
 ~/s/m/rfcmt c "mc [" alacritty -e mc
+```
+
+### Run Alacritty or focus it if already open, excluding Midnight Commander running in Alacritty
+
+```bash
+~/.local/bin/fre c Alacritty "mc [" alacritty
+```
+
+### Run Alacritty or focus it if already open without excluding any title fragment
+
+```bash
+~/.local/bin/fre c Alacritty "" alacritty
 ```
 
 Old mmsg IPC format:
@@ -120,6 +140,7 @@ Old mmsg IPC format:
 bind = SUPER, RETURN, spawn, ~/.local/bin/rfcm 1 org.kde.konsole konsole
 bind = SUPER, e, spawn, ~/.local/bin/rfcm c org.gnome.Nautilus GSK_RENDERER=gl nautilus
 bind = SUPER, m, spawn, ~/.local/bin/rfcmt "mc [" alacritty -e mc
+bind = SUPER,1,spawn, ~/.local/bin/fre c Alacritty "mc [" alacritty
 ```
 
 Older IPC variants:
@@ -171,8 +192,10 @@ The script:
 mkdir -p ~/.local/bin
 wget -O ~/.local/bin/rfcm https://raw.githubusercontent.com/mtriam/runorfosuc/main/rfcm.sh
 wget -O ~/.local/bin/rfcmt https://raw.githubusercontent.com/mtriam/runorfosuc/main/rfcmt.sh
+wget -O ~/.local/bin/rfe https://raw.githubusercontent.com/mtriam/runorfosuc/main/rfe.sh
 chmod +x ~/.local/bin/rfcm
 chmod +x ~/.local/bin/rfcmt
+chmod +x ~/.local/bin/rfe
 ```
 
 or (older IPC variants)
