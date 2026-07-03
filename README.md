@@ -91,7 +91,7 @@ bind = SUPER,1,spawn, ~/.local/bin/rf c Alacritty "" "mc [" alacritty
 Generate `rf` keybinds from currently visible clients:
 
 ```bash
-bash bind_generator_rf.sh
+~/.local/bin/bind_generator_rf
 ```
 
 ### How It Works
@@ -112,7 +112,9 @@ If the app is not running:
 ```bash
 mkdir -p ~/.local/bin
 wget -O ~/.local/bin/rf https://raw.githubusercontent.com/mtriam/runorfosuc/main/rf.sh
+wget -O ~/.local/bin/bind_generator_rf https://raw.githubusercontent.com/mtriam/runorfosuc/main/bind_generator_rf.sh
 chmod +x ~/.local/bin/rf
+chmod +x ~/.local/bin/bind_generator_rf
 ```
 
 ---
