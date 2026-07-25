@@ -1,17 +1,52 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [ "$#" -lt 5 ]; then
-  exit 1
-fi
+TAG=""
+APPID=""
+WINDOW_TITLE=""
+IGNORE_TITLE=""
+COMMAND=""
+cmd_args=()
 
-TAG="$1"
-APPID="$2"
-WINDOW_TITLE="$3"
-IGNORE_TITLE="$4"
-shift 4
-CMD="$*"
-read -r -a cmd_args <<< "$CMD"
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -t|--tag)
+      [ "$#" -ge 2 ] || exit 1
+      TAG="$2"
+      shift 2
+      ;;
+    -T|--title)
+      [ "$#" -ge 2 ] || exit 1
+      WINDOW_TITLE="$2"
+      shift 2
+      ;;
+    -a|--appid)
+      [ "$#" -ge 2 ] || exit 1
+      APPID="$2"
+      shift 2
+      ;;
+    -i|--ignore)
+      [ "$#" -ge 2 ] || exit 1
+      IGNORE_TITLE="$2"
+      shift 2
+      ;;
+    -c|--command)
+      [ "$#" -ge 2 ] || exit 1
+      COMMAND="$2"
+      shift 2
+      ;;
+    --)
+      shift
+      cmd_args=("$@")
+      break
+      ;;
+    *)
+      exit 1
+      ;;
+  esac
+done
+
+[ -n "$APPID" ] || [ -n "$WINDOW_TITLE" ] || exit 1
 env_args=()
 
 while [ "${#cmd_args[@]}" -gt 0 ] && [[ "${cmd_args[0]}" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]]; do
@@ -19,7 +54,33 @@ while [ "${#cmd_args[@]}" -gt 0 ] && [[ "${cmd_args[0]}" =~ ^[A-Za-z_][A-Za-z0-9
   cmd_args=("${cmd_args[@]:1}")
 done
 
-[ -n "$TAG" ] && [ "${#cmd_args[@]}" -gt 0 ] && { [ -n "$APPID" ] || [ -n "$WINDOW_TITLE" ]; } || exit 1
+wait_for_window_then_run_command() {
+  local max_checks=15
+  local check=0
+
+  while [ "$check" -lt "$max_checks" ]; do
+    local opened_count
+    opened_count=$(mmsg get all-clients | jq -r --arg appid "$APPID" --arg window_title "$WINDOW_TITLE" --arg ignore_title "$IGNORE_TITLE" '
+      [.clients[] |
+        select(
+          ($appid == "" or .appid == $appid)
+          and
+          ($window_title == "" or ((.title // "" | ascii_downcase) | contains($window_title | ascii_downcase)))
+          and
+          ($ignore_title == "" or ((.title // "" | ascii_downcase) | contains($ignore_title | ascii_downcase) | not))
+        )
+      ] | length')
+
+    if [ "$opened_count" -gt 0 ]; then
+      break
+    fi
+
+    sleep 0.2
+    check=$((check + 1))
+  done
+
+  [ -n "$COMMAND" ] && mmsg dispatch "$COMMAND" >/dev/null 2>&1
+}
 
 clients_data=$(mmsg get all-clients)
 mapfile -t rows < <(echo "$clients_data" |
@@ -43,6 +104,7 @@ matching_count=${#appids[@]}
 
 # no matches
 if [ "$matching_count" -eq 0 ]; then
+  [ "${#cmd_args[@]}" -gt 0 ] || exit 1
   if [[ "$TAG" =~ ^[1-9]$ ]]; then
     mmsg dispatch view,"$TAG" >/dev/null 2>&1
   fi
@@ -53,6 +115,7 @@ if [ "$matching_count" -eq 0 ]; then
       exec "${cmd_args[@]}"
     fi
   ) &
+  wait_for_window_then_run_command
   exit 0
 fi
 
