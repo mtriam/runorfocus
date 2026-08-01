@@ -48,11 +48,11 @@ Use `--` before the launch command.
 | `-T`, `--title` | Window title or title fragment to match |
 | `-i`, `--ignore` | Window title fragment to exclude from matches |
 | `-c`, `--command` | Optional `mmsg dispatch` command executed after launching and detecting the new window |
-| `-- <launch_command...>` | Command used to launch the application (variables, arguments and flags are supported). Use sh `-c "launch_command"` when the command requires shell parsing (pipes, redirects, &&, etc.). |
+| `-- <launch_command...>` | Command used to launch the application (variables, arguments and flags are supported). Use `sh -c "launch_command"` when the command requires shell parsing (pipes, redirects, &&, etc.). |
 
-Use 
+To inspect appids and titles, use: 
 ```bash
-mmsg get all-clients | jq -r '.clients[] | [.appid, .title] | @tsv'` to inspect appids and titles.
+mmsg get all-clients | jq -r '.clients[] | [.appid, .title] | @tsv'
 ```
 
 ### Examples
