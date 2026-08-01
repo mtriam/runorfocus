@@ -6,7 +6,7 @@ APPID=""
 WINDOW_TITLE=""
 IGNORE_TITLE=""
 COMMAND=""
-cmd_args=()
+CMD=()
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -37,24 +37,16 @@ while [ "$#" -gt 0 ]; do
       ;;
     --)
       shift
-      cmd_args=("$@")
+      CMD=("$@")
       break
       ;;
     *)
       exit 1
       ;;
   esac
-done
+ done
 
-[ -n "$APPID" ] || [ -n "$WINDOW_TITLE" ] || exit 1
-env_args=()
-
-while [ "${#cmd_args[@]}" -gt 0 ] && [[ "${cmd_args[0]}" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]]; do
-  env_args+=("${cmd_args[0]}")
-  cmd_args=("${cmd_args[@]:1}")
-done
-
-wait_for_window_then_run_command() {
+wait_for_window() {
   local max_checks=15
   local check=0
 
@@ -72,14 +64,14 @@ wait_for_window_then_run_command() {
       ] | length')
 
     if [ "$opened_count" -gt 0 ]; then
-      break
+      return 0
     fi
 
     sleep 0.2
     check=$((check + 1))
   done
 
-  [ -n "$COMMAND" ] && mmsg dispatch "$COMMAND" >/dev/null 2>&1
+  return 1
 }
 
 clients_data=$(mmsg get all-clients)
@@ -104,18 +96,14 @@ matching_count=${#appids[@]}
 
 # no matches
 if [ "$matching_count" -eq 0 ]; then
-  [ "${#cmd_args[@]}" -gt 0 ] || exit 1
+  [ "${#CMD[@]}" -gt 0 ] || exit 1
   if [[ "$TAG" =~ ^[1-9]$ ]]; then
     mmsg dispatch view,"$TAG" >/dev/null 2>&1
   fi
-  (
-    if [ "${#env_args[@]}" -gt 0 ]; then
-      exec env "${env_args[@]}" "${cmd_args[@]}"
-    else
-      exec "${cmd_args[@]}"
-    fi
-  ) &
-  wait_for_window_then_run_command
+    env "${CMD[@]}" &
+  if [ -n "$COMMAND" ] && wait_for_window; then
+    mmsg dispatch "$COMMAND" >/dev/null 2>&1
+  fi
   exit 0
 fi
 

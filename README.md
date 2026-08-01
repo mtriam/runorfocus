@@ -48,9 +48,12 @@ Use `--` before the launch command.
 | `-T`, `--title` | Window title or title fragment to match |
 | `-i`, `--ignore` | Window title fragment to exclude from matches |
 | `-c`, `--command` | Optional `mmsg dispatch` command executed after launching and detecting the new window |
-| `-- <launch_command...>` | Command used to launch the application (arguments and flags are supported) |
+| `-- <launch_command...>` | Command used to launch the application (variables, arguments and flags are supported). Use sh `-c "launch_command"` when the command requires shell parsing (pipes, redirects, &&, etc.). |
 
-Use `mmsg get all-clients | jq -r '.clients[] | [.appid, .title] | @tsv'` to inspect appids and titles.
+Use 
+```bash
+mmsg get all-clients | jq -r '.clients[] | [.appid, .title] | @tsv'` to inspect appids and titles.
+```
 
 ### Examples
 
@@ -63,7 +66,7 @@ Focus/cycle/launch Konsole on first tag:
 Focus Nautilus or launch it on current tag:
 
 ```bash
-~/.local/bin/rs -a org.gnome.Nautilus -- GSK_RENDERER=gl nautilus
+~/.local/bin/rs -a org.gnome.Nautilus -- GSK_RENDERER=gl nautilus --new-window
 ```
 
 Launch Midnight Commander in Alacritty on current tag or focus matching window by title:
@@ -76,6 +79,12 @@ Run Alacritty or focus it while excluding Midnight Commander title fragment:
 
 ```bash
 ~/.local/bin/rs -a Alacritty -i "mc [" -- alacritty
+```
+
+Run a complex shell command:
+
+```bash
+~/.local/bin/rs -a org.gnome.Nautilus -- sh -c "sleep 4 && GSK_RENDERER=gl nautilus --new-window"
 ```
 
 Launch app on tag 2 and then run an extra `mmsg dispatch` command:

@@ -11,15 +11,8 @@ WINDOW_TITLE="$3"
 IGNORE_TITLE="$4"
 shift 4
 CMD="$*"
-read -r -a cmd_args <<< "$CMD"
-env_args=()
 
-while [ "${#cmd_args[@]}" -gt 0 ] && [[ "${cmd_args[0]}" =~ ^[A-Za-z_][A-Za-z0-9_]*= ]]; do
-  env_args+=("${cmd_args[0]}")
-  cmd_args=("${cmd_args[@]:1}")
-done
-
-[ -n "$TAG" ] && [ "${#cmd_args[@]}" -gt 0 ] && { [ -n "$APPID" ] || [ -n "$WINDOW_TITLE" ]; } || exit 1
+[ -n "$TAG" ] && [ -n "$CMD" ] && { [ -n "$APPID" ] || [ -n "$WINDOW_TITLE" ]; } || exit 1
 
 clients_data=$(mmsg get all-clients)
 mapfile -t rows < <(echo "$clients_data" |
@@ -46,14 +39,8 @@ if [ "$matching_count" -eq 0 ]; then
   if [[ "$TAG" =~ ^[1-9]$ ]]; then
     mmsg dispatch view,"$TAG" >/dev/null 2>&1
   fi
-  (
-    if [ "${#env_args[@]}" -gt 0 ]; then
-      exec env "${env_args[@]}" "${cmd_args[@]}"
-    else
-      exec "${cmd_args[@]}"
-    fi
-  ) &
-  exit 0
+   eval "$CMD" &
+   exit 0
 fi
 
 if [ "$matching_count" -eq 1 ]; then
