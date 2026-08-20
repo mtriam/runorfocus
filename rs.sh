@@ -7,6 +7,7 @@ WINDOW_TITLE=""
 IGNORE_TITLE=""
 COMMAND=""
 CMD=()
+NO_FOCUSLAST=0
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -34,6 +35,10 @@ while [ "$#" -gt 0 ]; do
       [ "$#" -ge 2 ] || exit 1
       COMMAND="$2"
       shift 2
+      ;;
+    -n|--no-focuslast)
+      NO_FOCUSLAST=1
+      shift
       ;;
     --)
       shift
@@ -107,9 +112,12 @@ if [ "$matching_count" -eq 0 ]; then
   exit 0
 fi
 
+# one match
 if [ "$matching_count" -eq 1 ]; then
   if [ "${is_focused[0]}" = "true" ]; then
-    mmsg dispatch focuslast
+    if [ "$NO_FOCUSLAST" -ne 1 ]; then
+      mmsg dispatch focuslast
+    fi
     exit 0
   else
     mmsg dispatch view, "${tags[0]}"

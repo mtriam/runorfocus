@@ -26,7 +26,7 @@ Bind the script to a single key to create an all-in-one application handler. Dep
 ### Usage
 
 ```bash
-rs [-t|--tag <tag>] [-a|--appid <appid>] [-T|--title <window_title>] [-i|--ignore <ignore_title_fragment>] [-c|--command <mmsg_dispatch_command>] [-- <launch_command...>]
+rs [-t|--tag <tag>] [-a|--appid <appid>] [-T|--title <window_title>] [-i|--ignore <ignore_title_fragment>] [-c|--command <mmsg_dispatch_command>] [-n|--no-focuslast] [-- <launch_command...>]
 ```
 
 You can filter by:
@@ -48,6 +48,7 @@ Use `--` before the launch command.
 | `-T`, `--title` | Window title or title fragment to match |
 | `-i`, `--ignore` | Window title fragment to exclude from matches |
 | `-c`, `--command` | Optional `mmsg dispatch` command executed after launching and detecting the new window |
+| `-n`, `--no-focuslast` | Keep the current app focused when there is exactly one matching window, instead of switching back to the previously focused window |
 | `-- <launch_command...>` | Command used to launch the application (variables, arguments and flags are supported). Use `sh -c "launch_command"` when the command requires shell parsing (pipes, redirects, &&, etc.). |
 
 To inspect appids and titles, use: 
@@ -106,7 +107,7 @@ bind = SUPER,1,spawn, ~/.local/bin/rs -a Alacritty -i "mc [" -- alacritty
 
 If the app is already focused:
 - when another matching window exists, it cycles to the next one
-- when only one matching window exists, it switches to the previously focused window
+- when only one matching window exists, it switches to the previously focused window unless `-n/--no-focuslast` is used
 
 If the app exists but is not focused:
 - it focuses the matching window
